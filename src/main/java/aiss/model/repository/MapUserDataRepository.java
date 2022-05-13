@@ -14,8 +14,8 @@ public class MapUserDataRepository implements UserDataRepository {
 	Map<String, User> userMap;
 	Map<String, Token> tokenMap;
 	private static MapUserDataRepository instance = null;
-	private int indexUser = 0;
-	private int indexToken = 0;
+	private int indexUser = 1;
+	private int indexToken = 1;
 	
 	public static MapUserDataRepository getInstance() {
 		
@@ -70,6 +70,12 @@ public class MapUserDataRepository implements UserDataRepository {
 		user05.setPassword("Password05");
 		user05.setRole(0);
 		user05.setData(new HashMap<>(mapaInmutable));
+		
+		addUser(user01);
+		addUser(user02);
+		addUser(user03);
+		addUser(user04);
+		addUser(user05);
 		
 	}
 	

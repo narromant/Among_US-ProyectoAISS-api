@@ -8,7 +8,6 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.jboss.resteasy.annotations.ContentEncoding;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.NotFoundException;
 
@@ -22,6 +21,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
+import aiss.model.Playlist;
+import aiss.model.Song;
 import aiss.model.User;
 import aiss.model.repository.MapUserDataRepository;
 import aiss.model.repository.UserDataRepository;
@@ -29,7 +30,6 @@ import aiss.model.repository.UserDataRepository;
 @Path("/users")
 public class UserResource {
 
-	/* Singleton */
 	public static UserResource _instance=null;
 	UserDataRepository repository;
 	
@@ -42,36 +42,27 @@ public class UserResource {
 		return _instance;
 	}
 	
-	//   DEVOLVER TODOS LOS USUARIOS
-	@GET
-	@Produces("application/json")
-	public Collection<User> getAll() {
-		System.out.println(1);
-		return repository.getAllUsers();
-	}
 	
-//	//   CREAR USUARIO A PARTIR DE OBJETO USUARIO
-//	@POST
-//	@Consumes("application/json")
-//	@Produces("application/json")
-//	public Response addUser(@Context UriInfo uriInfo, User user) {
-//		System.out.println(1);
-//		if (user.getName() == null || "".equals(user.getName())) throw new BadRequestException("The user's name can't be null");
-//		if (user.getPassword().length() < 6) throw new BadRequestException("The user's password length must be at least 6 digits");
-//		repository.addUser(user);
-//		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
-//		URI uri = ub.build(user.getId());
-//		ResponseBuilder resp = Response.created(uri);
-//		resp.entity(user);			
-//		return resp.build();
-//	}
+	//   CREAR USUARIO A PARTIR DE OBJETO USUARIO
+	@POST
+	@Consumes("application/json")
+	@Produces("application/json")
+	public Response addUser(@Context UriInfo uriInfo, User user) {
+		if (user.getName() == null || "".equals(user.getName())) throw new BadRequestException("The user's name can't be null");
+		if (user.getPassword().length() < 6) throw new BadRequestException("The user's password length must be at least 6 digits");
+		repository.addUser(user);
+		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
+		URI uri = ub.build(user.getId());
+		ResponseBuilder resp = Response.created(uri);
+		resp.entity(user);			
+		return resp.build();
+	}
 
 	//   CREAR USUARIO A PARTIR DE NOMBRE Y CONTRASEÑA
 	@POST
 	@Consumes("application/json")
 	@Produces("application/json")
 	public Response addUser(@Context UriInfo uriInfo, String name, String password) {
-		System.out.println(2);
 		if (name == null || "".equals(name)) throw new BadRequestException("The user's name can't be null");
 		if (password.length() < 6) throw new BadRequestException("The user's password length must be at least 6 digits");
 		
@@ -85,6 +76,13 @@ public class UserResource {
 		ResponseBuilder resp = Response.created(uri);
 		resp.entity(user);			
 		return resp.build();
+	}
+
+	//   DEVOLVER TODOS LOS USUARIOS
+	@GET
+	@Produces("application/json")
+	public Collection<User> getAll(){
+		return repository.getAllUsers();
 	}
 
 	//   DEVOLVER UN USUARIO

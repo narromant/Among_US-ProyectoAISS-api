@@ -54,7 +54,8 @@ public class PlaylistResource {
 
 	@GET
 	@Produces("application/json")
-	public Collection<Playlist> getAll() {
+	public Collection<Playlist> getAll()
+	{
 		return repository.getAllPlaylists();
 	}
 	

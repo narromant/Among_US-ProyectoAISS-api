@@ -14,8 +14,8 @@ public class MapUserDataRepository implements UserDataRepository {
 	Map<String, User> userMap;
 	Map<String, Token> tokenMap;
 	private static MapUserDataRepository instance = null;
-	private int indexUser = 0;
-	private int indexToken = 0;
+	private int indexUser = 1;
+	private int indexToken = 1;
 	
 	public static MapUserDataRepository getInstance() {
 		
@@ -70,6 +70,12 @@ public class MapUserDataRepository implements UserDataRepository {
 		user05.setPassword("Password05");
 		user05.setRole(0);
 		user05.setData(new HashMap<>(mapaInmutable));
+		
+		addUser(user01);
+		addUser(user02);
+		addUser(user03);
+		addUser(user04);
+		addUser(user05);
 		
 	}
 	
@@ -132,14 +138,11 @@ public class MapUserDataRepository implements UserDataRepository {
 	
 	/////////////////////////////     METODOS DE TOKEN     /////////////////////////////
 	
-	public Token createToken(User i) {  // Entre createToken() y assignToken() se forma el metodo ADD de Token
-		return null; //return new Token(i.getId(), DateTime.now());
-	}
-	
-	public void assignToken(Token i) {
+	public void addToken(User i) {  // Entre createToken() y assignToken() se forma el metodo ADD de Token
+		Token token = new Token(i.getId());
 		String id = "t" + indexUser ++;
-		i.setId(id);
-		tokenMap.put(id, i);
+		token.setId(id);
+		tokenMap.put(id, token);
 	}
 	
 	public Collection<Token> getAllTokens() {
@@ -162,6 +165,12 @@ public class MapUserDataRepository implements UserDataRepository {
 	
 	public String getTokenValue(String id) {
 		return tokenMap.get(id).getValue();
+	}
+	
+	public Token getUserIdToken(String id) {
+		Token token = tokenMap.values().stream().filter(x -> x.getUserId().equals(id)).findFirst().orElse(null);
+		return token;
+	
 	}
 	
 	public String getTokenUserId(String value) {

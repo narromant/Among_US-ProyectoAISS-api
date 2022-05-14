@@ -4,7 +4,8 @@ package aiss.model;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-import com.google.api.client.util.DateTime;
+import com.google.appengine.repackaged.org.joda.time.DateTime;
+
 
 public class Token {
 	
@@ -18,14 +19,11 @@ public class Token {
 	private String userId;
 	private DateTime createdDateTime;
 	
-	
-	
-	public Token() {}
-	
-	public Token(String userId, DateTime createdDateTime) {
+	public Token(String userId) {
+		this.id = "";
 		this.value = generateNewToken();
 		this.userId = userId;
-		this.createdDateTime = createdDateTime;
+		this.createdDateTime = DateTime.now();
 	}
 	
 	public Token(String id, String value, String userId, DateTime createdDateTime) {

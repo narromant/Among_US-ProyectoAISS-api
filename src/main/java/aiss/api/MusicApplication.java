@@ -6,6 +6,8 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 import aiss.api.resources.PlaylistResource;
 import aiss.api.resources.SongResource;
+import aiss.api.resources.TokenResource;
+import aiss.api.resources.UserResource;
 
 
 public class MusicApplication extends Application {
@@ -18,6 +20,8 @@ public class MusicApplication extends Application {
 
 		singletons.add(PlaylistResource.getInstance());
 		singletons.add(SongResource.getInstance());
+		singletons.add(UserResource.getInstance());
+		singletons.add(TokenResource.getInstance());
 	}
 
 	@Override

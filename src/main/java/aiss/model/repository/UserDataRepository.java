@@ -21,13 +21,13 @@ public interface UserDataRepository {
 	public String getUserId(String name);
 	public Boolean checkCorrectToken(String name, String token);
 	
-	public Token createToken(User i);
-	public void assignToken(Token i);
+	public void addToken(User i);
 	public Collection<Token> getAllTokens();
 	public Token getToken(String id);
 	public void updateToken(Token i);
 	public void removeToken(String id);
 	public String getTokenValue(String id);
+	public Token getUserIdToken(String id);
 	public String getTokenUserId(String value);
 
 }

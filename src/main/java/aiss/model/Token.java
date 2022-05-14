@@ -19,6 +19,8 @@ public class Token {
 	private String userId;
 	private DateTime createdDateTime;
 	
+	public Token() {}
+	
 	public Token(String userId) {
 		this.id = "";
 		this.value = generateNewToken();

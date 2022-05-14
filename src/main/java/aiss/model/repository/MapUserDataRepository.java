@@ -77,6 +77,8 @@ public class MapUserDataRepository implements UserDataRepository {
 		addUser(user04);
 		addUser(user05);
 		
+		addToken(user01);;
+		
 	}
 	
 	/////////////////////////////     METODOS DE USER     /////////////////////////////
@@ -140,7 +142,7 @@ public class MapUserDataRepository implements UserDataRepository {
 	
 	public void addToken(User i) {  // Entre createToken() y assignToken() se forma el metodo ADD de Token
 		Token token = new Token(i.getId());
-		String id = "t" + indexUser ++;
+		String id = "t" + indexToken ++;
 		token.setId(id);
 		tokenMap.put(id, token);
 	}

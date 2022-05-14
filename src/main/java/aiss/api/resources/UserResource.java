@@ -2,6 +2,7 @@ package aiss.api.resources;
 
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -15,6 +16,8 @@ import org.jboss.resteasy.spi.UnauthorizedException;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -24,6 +27,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
+import aiss.api.resources.comparators.ComparatorNameUser;
+import aiss.api.resources.comparators.ComparatorNameUserReversed;
 import aiss.model.Token;
 import aiss.model.User;
 import aiss.model.repository.MapUserDataRepository;
@@ -50,38 +55,25 @@ public class UserResource {
 	//   DEVOLVER TODOS LOS USUARIOS
 	@GET
 	@Produces("application/json")
-	public Collection<User> getAll() {
-		return repository.getAllUsers();
+	public Collection<User> getAll(@QueryParam("order") String order) {
+		List<User> result = repository.getAllUsers().stream().collect(Collectors.toList());
+		if (order != null) {
+			if (order.equals(" name")) Collections.sort(result, new ComparatorNameUser());
+			else if (order.equals("-name")) Collections.sort(result, new ComparatorNameUserReversed());
+			else if (order.equals(" id")) Collections.sort(result, new ComparatorNameUser());
+			else if (order.equals("-id")) Collections.sort(result, new ComparatorNameUserReversed());
+			else throw new BadRequestException("The order parameter must be +name, -name, +id or -id");
+		}
+		return result;
 	}
 
-	//   CREAR USUARIO A PARTIR DE OBJETO USUARIO
-	@POST
-	@Consumes("application/json")
-	@Produces("application/json")
-	public Response addUser(@Context UriInfo uriInfo, User user) {
-		if (user.getName() == null || "".equals(user.getName())) throw new BadRequestException("The user's name can't be null");
-		if (user.getPassword().length() < 6) throw new BadRequestException("The user's password length must be at least 6 digits");
-		repository.addUser(user);
-		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
-		URI uri = ub.build(user.getId());
-		ResponseBuilder resp = Response.created(uri);
-		resp.entity(user);			
-		return resp.build();
-	}
-	
-//	//   CREAR USUARIO A PARTIR DE NOMBRE Y CONTRASEÑA
+//	//   CREAR USUARIO A PARTIR DE OBJETO USUARIO
 //	@POST
 //	@Consumes("application/json")
 //	@Produces("application/json")
-//	public Response addUser(@Context UriInfo uriInfo, String name, String password) {
-//		System.out.println(2);
-//		if (name == null || "".equals(name)) throw new BadRequestException("The user name can not be null");
-//		//if (password.length() < 6) throw new BadRequestException("The user password length must be at least 6 digits");
-//		
-//		User user = new User(name, password);
-//		if (repository.getAllUsers().isEmpty()) user.setRole(2);
-//		else user.setRole(0);
-//		
+//	public Response addUser(@Context UriInfo uriInfo, User user) {
+//		if (user.getName() == null || "".equals(user.getName())) throw new BadRequestException("The user's name can't be null");
+//		if (user.getPassword().length() < 6) throw new BadRequestException("The user's password length must be at least 6 digits");
 //		repository.addUser(user);
 //		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
 //		URI uri = ub.build(user.getId());
@@ -89,6 +81,27 @@ public class UserResource {
 //		resp.entity(user);			
 //		return resp.build();
 //	}
+	
+	//   CREAR USUARIO A PARTIR DE NOMBRE Y CONTRASEÑA
+	@POST
+	@Consumes("application/json")
+	@Produces("application/json")
+	public Response addUser(@Context UriInfo uriInfo, String name, String password) {
+		System.out.println(2);
+		if (name == null || "".equals(name)) throw new BadRequestException("The user name can not be null");
+		//if (password.length() < 6) throw new BadRequestException("The user password length must be at least 6 digits");
+		
+		User user = new User(name, password);
+		if (repository.getAllUsers().isEmpty()) user.setRole(2);
+		else user.setRole(0);
+		
+		repository.addUser(user);
+		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
+		URI uri = ub.build(user.getId());
+		ResponseBuilder resp = Response.created(uri);
+		resp.entity(user);			
+		return resp.build();
+	}
 
 	//   DEVOLVER UN USUARIO
 	@GET
@@ -122,39 +135,12 @@ public class UserResource {
 		return Response.noContent().build();
 	}
 	
-   ////////////////////////////   OPERACIONES CON TOKENS   ////////////////////////////
-	
-	//  INICIA SESION [DEVUELVE TOKEN]
-	@GET
-	@Path("/{id}/login/{password}")
-	@Consumes("application/json")
-	@Produces("application/json")
-	public String createUserToken(@PathParam("id") String id, @PathParam("password") String password) {
-		System.out.println(String.format("User %s attempted to login with password %s.", id, password));
-		User user = repository.getUser(id);
-		if (!user.getPassword().equals(password)) throw new BadRequestException("Incorrect password. Please try again.");
-		repository.addToken(user);
-		Token token = repository.getUserIdToken(id);
-		return token.getValue();
-	}
-	
-	//  CIERRA SESION [ELIMINA TOKEN]
-	@DELETE
-	@Path("/{id}/logout")
-	public Response deleteUserToken(@PathParam("id") String id) {
-		System.out.println(String.format("User %s attempted to logout.", id));
-		Token token = repository.getUserIdToken(id);
-		if (token == null) throw new NotFoundException("The user with id: ["+ id +"] is not logged.");
-		repository.removeToken(token.getId());
-		return Response.noContent().build();
-	}
-	
 	//   INSERTAR UN NUEVO DATO DE USUARIO
 	@POST	
-	@Path("/{userId}/{dataKey}")
+	@Path("/{userId}/{dataKey}/{dataValue}")
 	@Consumes("text/plain")
 	@Produces("application/json")
-	public Response addData(@Context UriInfo uriInfo,@PathParam("userId") String userId, @PathParam("dataKey") String dataKey, String dataValue) {				
+	public Response addData(@Context UriInfo uriInfo,@PathParam("userId") String userId, @PathParam("dataKey") String dataKey, @PathParam("dataValue") String dataValue) {				
 	
 		User user = repository.getUser(userId);
 		if (user == null) throw new NotFoundException("The user with id: [" + userId + "] was not found");
@@ -210,14 +196,22 @@ public class UserResource {
 		return Response.noContent().build();
 	}
 	
+	////////////////////////////   OPERACIONES DE GRUPOS   ////////////////////////////
+	
+	
+	////////////////////////////   OPERACIONES DE FILTRADO Y ORDENACION   ////////////////////////////
+	
+	
 	
 	//   TODO SIN HACER
 	
 	//   CRUD DATOS DE USUARIO
+	
 	//   LAS MIERDAS DE LOS GRUPOS
 	//   FILTRO DE NOMBRES DE USUARIOS DADO UN DATO Y EL VALOR
 	//   LISTA ORDENADA DE DATOS DE USUARIO DADO EL DATO
-	//   MODIFICAR DATOS DE ROL 0 COMO ROL 1
+	
+	//   ACCESO A FUNCIONES DE ROL 1 Y 2
 	
 	//   TODO ACTUALIZAR
 	

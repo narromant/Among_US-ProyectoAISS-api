@@ -10,9 +10,9 @@ public class Group {
     private String name;
     private String description;
     private Collection<String> users;
-    private User creator;
+    private String creator;
     
-    public Group(String name,String description, User creator) {
+    public Group(String name,String description, String creator) {
         this.name = name;
         this.description = description;
         this.users = new ArrayList<>();
@@ -39,7 +39,7 @@ public class Group {
 		return users;
 	}
 
-	public User getCreator() {
+	public String getCreator() {
 		return creator;
 	}
 
@@ -59,7 +59,7 @@ public class Group {
 		this.users = users;
 	}
 
-	public void setCreator(User creator) {
+	public void setCreator(String creator) {
 		this.creator = creator;
 	}
 

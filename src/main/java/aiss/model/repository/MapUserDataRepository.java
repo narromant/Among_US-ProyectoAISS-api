@@ -2,9 +2,8 @@ package aiss.model.repository;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import com.google.appengine.repackaged.org.joda.time.DateTime;
 
 import aiss.model.Group;
 import aiss.model.Token;
@@ -39,6 +38,7 @@ public class MapUserDataRepository implements UserDataRepository {
 		groupMap = new HashMap<String, Group>();
 		
 		Map<String, String> mapaInmutable;
+		List<String> usuarios;
 		
 		User user01 = new User();
 		mapaInmutable = Map.of("Gender", "Female", "Phone", "601010101", "Office", "501", "Job", "Director", "Salary", "5000");
@@ -55,7 +55,7 @@ public class MapUserDataRepository implements UserDataRepository {
 		user02.setData(new HashMap<>(mapaInmutable));
 		
 		User user03 = new User();
-		mapaInmutable = Map.of("Gender", "Male", "Phone", "603030303", "Office", "308", "Job", "Programmer", "Salary", "1800");
+		mapaInmutable = Map.of("Gender", "Male", "Phone", "603030303", "Office", "908", "Job", "Programmer", "Salary", "1800");
 		user03.setName("Tadeo");
 		user03.setPassword("Password03");
 		user03.setRole(0);
@@ -82,13 +82,47 @@ public class MapUserDataRepository implements UserDataRepository {
 		user06.setRole(1);
 		user06.setData(new HashMap<>(mapaInmutable));
 		
+		User user07 = new User();
+		mapaInmutable = Map.of("Gender", "Male", "Phone", "607070707", "Office", "102", "Job", "Security", "Salary", "2500");
+		user07.setName("Alejandro");
+		user07.setPassword("Password07");
+		user07.setRole(0);
+		user07.setData(new HashMap<>(mapaInmutable));
+		
+		Group group01= new Group();
+		usuarios=List.of("u2","u3");
+		group01.setName("Nueva Estrategia de Marketing");
+		group01.setDescription("Grupo de integrantes del proyecto solicitado por Finlandia");
+		group01.setUsers(usuarios);
+		group01.setCreator("u6");
+
+		Group group02= new Group();
+		usuarios=List.of("u5","u3", "u7");
+		group02.setName("API para AISS");
+		group02.setDescription("Grupo de integrantes de un proyecto de gestión de usuarios");
+		group02.setUsers(usuarios);
+		group02.setCreator("u4");
+
+		Group group03= new Group();
+		usuarios=List.of("u5","u2");
+		group03.setName("Gente a punto de ser Despedida");
+		group03.setDescription("El nombre lo dice todo");
+		group03.setUsers(usuarios);
+		group03.setCreator("u6");
+		
 		addUser(user01);
 		addUser(user02);
 		addUser(user03);
 		addUser(user04);
 		addUser(user05);
+		addUser(user06);
+		addUser(user07);
 		
-		addToken(user01);;
+		addGroup(group01);
+		addGroup(group02);
+		addGroup(group03);
+		
+		addToken(user01);
 		
 	}
 	

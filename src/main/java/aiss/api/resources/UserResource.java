@@ -17,6 +17,7 @@ import org.jboss.resteasy.spi.UnauthorizedException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,47 +68,59 @@ public class UserResource {
 		return result;
 	}
 
-//	//   CREAR USUARIO A PARTIR DE OBJETO USUARIO
-//	@POST
-//	@Consumes("application/json")
-//	@Produces("application/json")
-//	public Response addUser(@Context UriInfo uriInfo, User user) {
-//		if (user.getName() == null || "".equals(user.getName())) throw new BadRequestException("The user's name can't be null");
-//		if (user.getPassword().length() < 6) throw new BadRequestException("The user's password length must be at least 6 digits");
-//		repository.addUser(user);
-//		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
-//		URI uri = ub.build(user.getId());
-//		ResponseBuilder resp = Response.created(uri);
-//		resp.entity(user);			
-//		return resp.build();
-//	}
-	
-	//   CREAR USUARIO A PARTIR DE NOMBRE Y CONTRASEÑA
+	//   CREAR USUARIO A PARTIR DE OBJETO USUARIO
 	@POST
 	@Consumes("application/json")
 	@Produces("application/json")
-	public Response addUser(@Context UriInfo uriInfo, String name, String password) {
-		System.out.println(2);
-		if (name == null || "".equals(name)) throw new BadRequestException("The user name can not be null");
-		//if (password.length() < 6) throw new BadRequestException("The user password length must be at least 6 digits");
-		
-		User user = new User(name, password);
+	public Response addUser(@Context UriInfo uriInfo, User user) {
+		user.setId("");
+		user.setData(new HashMap<>());
 		if (repository.getAllUsers().isEmpty()) user.setRole(2);
 		else user.setRole(0);
-		
+		if (user.getName() == null || "".equals(user.getName())) throw new BadRequestException("The user's name can't be null");
+		if (user.getPassword() == null && user.getPassword().length() < 6) throw new BadRequestException("The user's password length must be at least 6 digits");
 		repository.addUser(user);
 		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
+		
+		System.out.println("\n\n\n\n");
 		URI uri = ub.build(user.getId());
+
+		
 		ResponseBuilder resp = Response.created(uri);
 		resp.entity(user);			
 		return resp.build();
 	}
+	
+	
+//	//   CREAR USUARIO A PARTIR DE NOMBRE Y CONTRASEÑA
+//	@POST
+//	@Consumes("application/json")
+//	@Produces("application/json")
+//	public Response addUser(@Context UriInfo uriInfo) {
+//		String name = "nacho";
+//		String password = "heleeep";
+//
+//		if (name == null || "".equals(name)) throw new BadRequestException("The user name can not be null");
+//		if (password.length() < 6) throw new BadRequestException("The user password length must be at least 6 digits");
+//		
+//		User user = new User(name, password);
+//		if (repository.getAllUsers().isEmpty()) user.setRole(2);
+//		else user.setRole(0);
+//		repository.addUser(user);
+//		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
+//		System.out.println("\n\n\n\n");
+//		URI uri = ub.build(user.getId());
+//		System.out.println("\n\n\n\n");
+//		ResponseBuilder resp = Response.created(uri);
+//		resp.entity(user);			
+//		return resp.build();
+//	}
 
 	//   DEVOLVER UN USUARIO
 	@GET
 	@Path("/{id}")
 	@Produces("application/json")
-	public User get(@PathParam("id") String id) {
+	public User getUser(@PathParam("id") String id) {
 		User user = repository.getUser(id);
 		if (user == null) throw new NotFoundException("The user with id: [" + id + "] was not found");
 		return user;
@@ -209,14 +222,11 @@ public class UserResource {
 	
 	//   LAS MIERDAS DE LOS GRUPOS
 	//   FILTRO DE NOMBRES DE USUARIOS DADO UN DATO Y EL VALOR
-	//   LISTA ORDENADA DE DATOS DE USUARIO DADO EL DATO
 	
 	//   ACCESO A FUNCIONES DE ROL 1 Y 2
 	
 	//   TODO ACTUALIZAR
 	
-	//   LOGIN
-	//   POST USER
 	//   DELETE USER // BANEAR USUARIO COMO ROL 2
 	//   MODIFICAR ROLES COMO ROL 2 (no se sabe si funciona lol)
 	

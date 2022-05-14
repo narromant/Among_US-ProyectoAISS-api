@@ -44,12 +44,14 @@ public class TokenResource {
 	
 	//  INICIA SESION [DEVUELVE TOKEN]
 	@POST
-	@Path("/{id}/{password}")
+	@Path("/{id}")
 	@Consumes("application/json")
 	@Produces("application/json")
-	public String createUserToken(@PathParam("id") String id, @PathParam("password") String password) {
-		System.out.println(String.format("User %s attempted to login with password %s.", id, password));
+	public String createUserToken(@PathParam("id") String id, String password) {
+		System.out.println(String.format("\n\n\nUser %s attempted to login with password %s.\n\n\n", id, password));
 		User user = repository.getUser(id);
+		if (user == null) throw new BadRequestException("User not found");
+		if (repository.getUserIdToken(id) != null) throw new BadRequestException("User is already logged");
 		if (!user.getPassword().equals(password)) throw new BadRequestException("Incorrect password. Please try again.");
 		repository.addToken(user);
 		Token token = repository.getUserIdToken(id);

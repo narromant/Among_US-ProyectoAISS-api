@@ -1,6 +1,6 @@
 package aiss.model;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class User {
@@ -19,13 +19,7 @@ public class User {
 		this.name = name;
 		this.password = password;
 	}
-	
-	public User(String id, String name, String password, Map<String, String> data) {
-		this.id = id;
-		this.name = name;
-		this.password = password;
-		this.data = data;
-	}
+
 	
 
 	

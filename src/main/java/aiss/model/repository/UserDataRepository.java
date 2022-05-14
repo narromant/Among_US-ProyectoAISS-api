@@ -3,6 +3,7 @@ package aiss.model.repository;
 import java.util.Collection;
 import java.util.Map;
 
+import aiss.model.Group;
 import aiss.model.Token;
 import aiss.model.User;
 
@@ -29,5 +30,14 @@ public interface UserDataRepository {
 	public String getTokenValue(String id);
 	public Token getUserIdToken(String id);
 	public String getTokenUserId(String value);
+	
+	public void addGroup(Group i);
+	public Collection<Group> getAllGroups();
+	public Group getGroup(String id);
+	public void updateGroup(Group i);
+	public void deleteGroup(String id);
+	public void addGroupUser(String id, String userId);
+	public Collection<String> getAllGroupUsers(String id);
+	public void deleteGroupUser(String id, String userId);
 
 }

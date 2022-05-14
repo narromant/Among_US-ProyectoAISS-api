@@ -9,7 +9,7 @@ public class Group {
     private String id;
     private String name;
     private String description;
-    private Collection<User> users;
+    private Collection<String> users;
     private User creator;
     
     public Group(String name,String description, User creator) {
@@ -35,7 +35,7 @@ public class Group {
 		return description;
 	}
 
-	public Collection<User> getUsers() {
+	public Collection<String> getUsers() {
 		return users;
 	}
 
@@ -55,7 +55,7 @@ public class Group {
 		this.description = description;
 	}
 
-	public void setUsers(Collection<User> users) {
+	public void setUsers(Collection<String> users) {
 		this.users = users;
 	}
 
@@ -64,16 +64,15 @@ public class Group {
 	}
 
 	//Funciones
-    public void addUser(User user) {
-        this.users.add(user); 
+    public void addUser(String userId) {
+        this.users.add(userId); 
     }
-    public void addMultipleUsers(Collection<User> users) {
+    public void addMultipleUsers(Collection<String> users) {
         this.users.addAll(users);
     }
-    public User getUser(String id) {
-        if (this.users == null) return null;
-        User user = users.stream().filter(u->u.getId()==id).findFirst().orElse(null);
-        return user;
+
+    public void deleteUser(String userId) {
+    	this.users.remove(userId); 
     }
 	
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.google.appengine.repackaged.org.joda.time.DateTime;
 
+import aiss.model.Group;
 import aiss.model.Token;
 import aiss.model.User;
 
@@ -13,9 +14,11 @@ public class MapUserDataRepository implements UserDataRepository {
 
 	Map<String, User> userMap;
 	Map<String, Token> tokenMap;
+	Map<String, Group> groupMap;
 	private static MapUserDataRepository instance = null;
 	private int indexUser = 1;
 	private int indexToken = 1;
+	private int indexGroup = 1;
 	
 	public static MapUserDataRepository getInstance() {
 		
@@ -33,43 +36,51 @@ public class MapUserDataRepository implements UserDataRepository {
 		
 		userMap = new HashMap<String, User>();
 		tokenMap = new HashMap<String, Token>();
+		groupMap = new HashMap<String, Group>();
 		
 		Map<String, String> mapaInmutable;
 		
 		User user01 = new User();
-		mapaInmutable = Map.of("Gender", "Male", "Phone", "601010101", "Office", "207", "Job", "Accountant", "WorkingOn", "Project01");
-		user01.setName("User01");
+		mapaInmutable = Map.of("Gender", "Female", "Phone", "601010101", "Office", "501", "Job", "Director", "Salary", "5000");
+		user01.setName("Lucia");
 		user01.setPassword("Password01");
-		user01.setRole(1);
+		user01.setRole(2);
 		user01.setData(new HashMap<>(mapaInmutable)); // Definir el mapa de esta manera hace que sea mutable
 		
 		User user02 = new User();
-		mapaInmutable = Map.of("Gender", "Female", "Phone", "602020202", "Office", "405", "Job", "Programmer", "WorkingOn", "Project02");
-		user02.setName("User02");
+		mapaInmutable = Map.of("Gender", "Female", "Phone", "602020202", "Office", "405", "Job", "Programmer", "Salary", "2300");
+		user02.setName("Mar");
 		user02.setPassword("Password02");
 		user02.setRole(0);
 		user02.setData(new HashMap<>(mapaInmutable));
 		
 		User user03 = new User();
-		mapaInmutable = Map.of("Gender", "Male", "Phone", "603030303", "Office", "308", "Job", "Programmer", "WorkingOn", "Project01");
-		user03.setName("User02");
-		user03.setPassword("Password02");
+		mapaInmutable = Map.of("Gender", "Male", "Phone", "603030303", "Office", "308", "Job", "Programmer", "Salary", "1800");
+		user03.setName("Tadeo");
+		user03.setPassword("Password03");
 		user03.setRole(0);
 		user03.setData(new HashMap<>(mapaInmutable));
 
 		User user04 = new User();
-		mapaInmutable = Map.of("Gender", "Female", "Phone", "604040404", "Office", "501", "Job", "Director", "WorkingOn", "");
-		user04.setName("User04");
+		mapaInmutable = Map.of("Gender", "Female", "Phone", "604040404", "Office", "207", "Job", "Accountant", "Salary", "2000");
+		user04.setName("Paco");
 		user04.setPassword("Password04");
-		user04.setRole(2);
+		user04.setRole(1);
 		user04.setData(new HashMap<>(mapaInmutable));
 
 		User user05 = new User();
-		mapaInmutable = Map.of("Gender", "Male", "Phone", "605050505", "Office", "", "Job", "Cleaner", "WorkingOn", "");
-		user05.setName("User05");
+		mapaInmutable = Map.of("Gender", "Male", "Phone", "605050505", "Office", "", "Job", "Cleaner", "Salary", "800");
+		user05.setName("Ignacio");
 		user05.setPassword("Password05");
 		user05.setRole(0);
 		user05.setData(new HashMap<>(mapaInmutable));
+		
+		User user06 = new User();
+		mapaInmutable = Map.of("Gender", "Female", "Phone", "606060606", "Office", "405", "Job", "Accountant", "Salary", "2500");
+		user06.setName("Adela");
+		user06.setPassword("Password06");
+		user06.setRole(1);
+		user06.setData(new HashMap<>(mapaInmutable));
 		
 		addUser(user01);
 		addUser(user02);
@@ -179,6 +190,42 @@ public class MapUserDataRepository implements UserDataRepository {
 		Token token = tokenMap.values().stream().filter(x -> x.getValue().equals(value)).findFirst().orElse(null);
 		if (token != null) return token.getUserId();  // De esta manera evitamos que intente hacerle getId() a null y genere un error
 		else return null;
+	}
+	
+	/////////////////////////////     METODOS DE GROUPS     /////////////////////////////
+	
+	public void addGroup(Group i) {
+		String id = "g" + indexGroup ++;
+		i.setId(id);
+		groupMap.put(id, i);
+	}
+	
+	public Collection<Group> getAllGroups() {
+		return groupMap.values();
+	}
+	
+	public Group getGroup(String id) {
+		return groupMap.get(id);
+	}
+	
+	public void updateGroup(Group i) {
+		groupMap.put(i.getId(), i);
+	}
+	
+	public void deleteGroup(String id) {
+		groupMap.remove(id);
+	}
+	
+	public void addGroupUser(String id, String userId) {
+		groupMap.get(id).addUser(userId);
+	}
+	
+	public Collection<String> getAllGroupUsers(String id) {
+		return groupMap.get(id).getUsers();
+	}
+	
+	public void deleteGroupUser(String id, String userId) {
+		groupMap.get(id).deleteUser(userId);
 	}
 	
 }

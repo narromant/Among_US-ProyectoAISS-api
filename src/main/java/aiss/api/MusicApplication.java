@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.core.Application;
-import aiss.api.resources.PlaylistResource;
-import aiss.api.resources.SongResource;
+
+import aiss.api.resources.GroupResource;
 import aiss.api.resources.TokenResource;
 import aiss.api.resources.UserResource;
 
@@ -18,10 +18,9 @@ public class MusicApplication extends Application {
 	// so that they can be found by RESTEasy.
 	public MusicApplication() {
 
-		singletons.add(PlaylistResource.getInstance());
-		singletons.add(SongResource.getInstance());
 		singletons.add(UserResource.getInstance());
 		singletons.add(TokenResource.getInstance());
+		singletons.add(GroupResource.getInstance());
 	}
 
 	@Override

@@ -159,12 +159,14 @@ public class MapUserDataRepository implements UserDataRepository {
 		return userMap.get(id).getData();
 	}
 	
-	public void updateData(String id, String key, String data) { // Los metodos ADD y UPDATE son iguales para los datos de usuario
-		// TODO
-	}
-	
+	public void updateData(String id, String key, String data) {
+		// Los metodos ADD y UPDATE son iguales para los datos de usuario
+        Map<String, String> mapa = userMap.get(id).getData();
+        mapa.put(key, data);
+        userMap.get(id).setData(mapa); 
+    }
 	public void deleteData(String id, String key) {
-		userMap.remove(key);
+		userMap.get(id).getData().remove(key);
 	}
 	
 	// FUNCIONES EXTRA

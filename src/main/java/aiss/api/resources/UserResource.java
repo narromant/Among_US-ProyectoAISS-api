@@ -9,16 +9,19 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-
+import org.jboss.resteasy.annotations.Body;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.NotFoundException;
 import org.jboss.resteasy.spi.UnauthorizedException;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -30,6 +33,9 @@ import javax.ws.rs.Path;
 
 import aiss.api.resources.bodyModels.Id_Token;
 import aiss.api.resources.bodyModels.User_Token;
+import aiss.api.resources.bodyModels.Value_Token;
+import aiss.api.resources.comparators.ComparatorIdUser;
+import aiss.api.resources.comparators.ComparatorIdUserReversed;
 import aiss.api.resources.comparators.ComparatorNameUser;
 import aiss.api.resources.comparators.ComparatorNameUserReversed;
 import aiss.model.Token;
@@ -55,20 +61,28 @@ public class UserResource {
 	
 	////////////////////////////   OPERACIONES CRUD USUARIO   ////////////////////////////
 	
-	//   DEVOLVER TODOS LOS USUARIOS
 	@GET
-	@Produces("application/json")
-	public Collection<User> getAll(@QueryParam("order") String order) {
-		List<User> result = repository.getAllUsers().stream().collect(Collectors.toList());
-		if (order != null) {
-			if (order.equals(" name")) Collections.sort(result, new ComparatorNameUser());
-			else if (order.equals("-name")) Collections.sort(result, new ComparatorNameUserReversed());
-			else if (order.equals(" id")) Collections.sort(result, new ComparatorNameUser());
-			else if (order.equals("-id")) Collections.sort(result, new ComparatorNameUserReversed());
-			else throw new BadRequestException("The order parameter must be +name, -name, +id or -id");
-		}
-		return result;
-	}
+    @Produces("application/json")
+    public List<User> getAll(@QueryParam("order") String order, @QueryParam("onlyAdmins") Boolean onlyAdmins, @QueryParam("name") String name) {
+        
+        if (onlyAdmins != null && name != null) throw new BadRequestException("You can not use both filters");
+        List<User> unfilteredResult = repository.getAllUsers().stream().collect(Collectors.toList());
+        Set<User> result = new HashSet<User>();
+        for (User user: unfilteredResult) {
+            // COMO NO SE PUEDEN USAR LOS DOS FILTRADOS A LA VEZ SE PUEDE HACER EN DISTINTAS LINEAS
+            if (name == null && (onlyAdmins == null || (onlyAdmins && user.getRole() != 0) || (!onlyAdmins))) result.add(user);
+            if ((onlyAdmins == null || onlyAdmins == false) && (name == null || user.getName().equals(name))) result.add(user);
+        }
+        List<User>resultList=result.stream().collect(Collectors.toList());
+        if (order != null) {
+            if (order.equals(" name")) Collections.sort(resultList, new ComparatorNameUser());
+            else if (order.equals("-name")) Collections.sort(resultList, new ComparatorNameUserReversed());
+            else if (order.equals(" id")) Collections.sort(resultList, new ComparatorIdUser());
+            else if (order.equals("-id")) Collections.sort(resultList, new ComparatorIdUserReversed());
+            else throw new BadRequestException("The order parameter must be +name, -name, +id or -id");
+        }
+        return resultList;
+    }
 
 	//   CREAR USUARIO A PARTIR DE OBJETO USUARIO
 	@POST
@@ -90,54 +104,35 @@ public class UserResource {
 		resp.entity(user);			
 		return resp.build();
 	}
-	
-	
-//	//   CREAR USUARIO A PARTIR DE NOMBRE Y CONTRASEÑA
-//	@POST
-//	@Consumes("application/json")
-//	@Produces("application/json")
-//	public Response addUser(@Context UriInfo uriInfo) {
-//		String name = "nacho";
-//		String password = "heleeep";
-//
-//		if (name == null || "".equals(name)) throw new BadRequestException("The user name can not be null");
-//		if (password.length() < 6) throw new BadRequestException("The user password length must be at least 6 digits");
-//		
-//		User user = new User(name, password);
-//		if (repository.getAllUsers().isEmpty()) user.setRole(2);
-//		else user.setRole(0);
-//		repository.addUser(user);
-//		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
-//		System.out.println("\n\n\n\n");
-//		URI uri = ub.build(user.getId());
-//		System.out.println("\n\n\n\n");
-//		ResponseBuilder resp = Response.created(uri);
-//		resp.entity(user);			
-//		return resp.build();
-//	}
 
 	//   DEVOLVER UN USUARIO
 	@GET
 	@Path("/{id}")
 	@Consumes("application/json")
 	@Produces("application/json")
-	public User getUser(@PathParam("id") String id, String token) {
-		System.out.println(token);
+	public User getUser(@PathParam("id") String id) {
 		User user = repository.getUser(id);
 		if (user == null) throw new NotFoundException("The user with id: [" + id + "] was not found");
-		if (repository.checkCorrectToken(user.getName(), token)) throw new BadRequestException("The identification token is not correct");
 		return user;
 	}
 	
-	//   ELIMINAR UN USUARIO
-	@DELETE
-	@Path("/{id}")
-	public Response removeUser(@PathParam("id") String id) {
-		User toberemoved = repository.getUser(id);
-		if (toberemoved == null) throw new NotFoundException("The user with id: ["+ id +"] was not found");
-		else repository.deleteUser(id);
-		return Response.noContent().build();
-	}
+	 //   ELIMINAR UN USUARIO
+    @DELETE
+    @Path("/{id}")
+    @Consumes("application/json")
+    public Response removeUser(@PathParam("id") String id, Id_Token body) {
+        String token= body.getToken();
+        User toberemoved = repository.getUser(id);
+        User deleter = repository.getUser(repository.getTokenUserId(token));
+        
+        if (deleter == null) throw new NotFoundException("The token does not exist");
+        if (toberemoved == null) throw new NotFoundException("The user with id: ["+ id +"] was not found");
+        if (toberemoved.getRole()==2) throw new UnauthorizedException("El owner no puede ser eliminado");
+        if (deleter.getRole() != 2 && !deleter.getId().equals(toberemoved.getId())) throw new UnauthorizedException("You can not delete other accounts if you are not the owner");
+        
+        else repository.deleteUser(id);
+        return Response.noContent().build();
+    }
 	
 //  EDITAR EL NOMBRE DEL USUARIO [NECESITA TOKEN]
    @PUT
@@ -149,11 +144,6 @@ public class UserResource {
        String token = body.getToken();
        User oldUser = repository.getUser(id);
        
-       System.out.println("\\n\\n\\n"+token);
-       System.out.println(oldUser.getName());
-       System.out.println(repository.getTokenUserId(token));
-       System.out.println(token.equals(repository.getTokenUserId(id)));
-       
        if (oldUser == null) throw new NotFoundException("The user with id: [" + id + "] was not found");  
        if (oldUser.getId() != repository.getTokenUserId(token)) throw new BadRequestException("The identification token is not correct");        
        if (user.getData() != null || user.getRole() != null || user.getPassword() != null) throw new BadRequestException("You can only change the name of the user with this function.");
@@ -162,42 +152,83 @@ public class UserResource {
        return Response.noContent().build();
    }
 	
-	//   INSERTAR UN NUEVO DATO DE USUARIO
-	@POST	
-	@Path("/{userId}/{dataKey}/{dataValue}")
-	@Consumes("text/plain")
-	@Produces("application/json")
-	public Response addData(@Context UriInfo uriInfo,@PathParam("userId") String userId, @PathParam("dataKey") String dataKey, @PathParam("dataValue") String dataValue) {				
+   //   OBTENER UN DATO DEL USUARIO [NECESITA TOKEN]
+   @GET
+   @Path("/{id}/data/{dataKey}")
+   @Consumes("application/json")
+   @Produces("application/json")
+   public String getData(@PathParam("id") String id, @PathParam("dataKey") String dataKey) {
+       String dato = repository.getOneData(id, dataKey);
+       
+       if (repository.getUser(id) == null) throw new NotFoundException("The user with id: [" + id + "] was not found");
+       if (dato == null) throw new NotFoundException(String.format("The data [%s] was not found", dato));
+       return dato;
+   }
+   
+	@POST    
+    @Path("/{id}/data/{dataKey}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response addData(@Context UriInfo uriInfo,@PathParam("id") String id, @PathParam("dataKey") String dataKey, Value_Token body) {                
+        String token = body.getToken();
+        String dataValue = body.getValue();
+        User user = repository.getUser(id);
+        User adder= repository.getUser(repository.getTokenUserId(token));
+ 
+        if(token==null) throw new NotFoundException("The token does not exist");
+        if (user == null) throw new NotFoundException("The user with id: [" + id + "] was not found");
+        if(adder.getId() != user.getId() && adder.getRole()==0) throw new NotFoundException("You can not edit another account if you are not an admin or the owner");
+        if (repository.getOneData(id, dataKey) != null) throw new BadRequestException("The data is already included in the user.");
+        repository.updateData(id, dataKey, dataValue);        
+        UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass());
+        URI uri = ub.build(id);
+        ResponseBuilder resp = Response.created(uri);
+        resp.entity(user);            
+        return resp.build();
+    }
 	
-		User user = repository.getUser(userId);
-		if (user == null) throw new NotFoundException("The user with id: [" + userId + "] was not found");
-		
-		if (repository.getOneData(userId, dataKey) != null) throw new BadRequestException("The data is already included in the user.");
-
-		repository.updateData(userId, dataKey, dataValue);		
-
-		// Builds the response
-		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
-		URI uri = ub.build(userId);
-		ResponseBuilder resp = Response.created(uri);
-		resp.entity(user);			
-		return resp.build();
-	}
+//  EDITAR UN NUEVO DATO DE USUARIO
+   @PUT    
+   @Path("/{userId}/data/{dataKey}")
+   @Consumes("application/json")
+   @Produces("application/json")
+   public Response editData(@Context UriInfo uriInfo,@PathParam("userId") String userId, @PathParam("dataKey") String dataKey, Value_Token body) {                
+       String token = body.getToken();
+       String dataValue = body.getValue();
+       User user = repository.getUser(userId);
+       User adder= repository.getUser(repository.getTokenUserId(token));
+       
+       if(token==null) throw new NotFoundException("The token does not exist");
+       if (user == null) throw new NotFoundException("The user with id: [" + userId + "] was not found");
+       if(adder.getId() != user.getId() && adder.getRole()==0) throw new NotFoundException("You can not edit another account if you are not an admin or the owner");
+       repository.updateData(userId, dataKey, dataValue);        
+       UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass());
+       URI uri = ub.build(userId);
+       ResponseBuilder resp = Response.created(uri);
+       resp.entity(user);            
+       return resp.build();
+   }
 	
-	//   EDITAR UN DATO DE USUARIO
-	@DELETE
-	@Path("/{userId}/{dataKey}")
-	public Response removeDataKey(@PathParam("userId") String userId, @PathParam("dataKey") String dataKey) {
-		User user = repository.getUser(userId);
-		String dato = repository.getOneData(userId, dataKey);
-		
-		if (user == null) throw new NotFoundException("The playlist with id: [" + userId + "] was not found");
-		if (dato == null) throw new NotFoundException(String.format("The data [%s] was not found", dato));
-		
-		repository.deleteData(userId, dataKey);		
-		
-		return Response.noContent().build();
-	}
+   @DELETE
+   @Path("/{id}/data/{dataKey}")
+   @Consumes("application/json")
+   public Response removeData(@PathParam("id") String id, @PathParam("dataKey") String dataKey, Value_Token body) {
+       
+       User user = repository.getUser(id);
+       String dato = repository.getOneData(id, dataKey);
+       String token = body.getToken();
+       String removerId=repository.getTokenUserId(token);
+       User remover= repository.getUser(removerId);
+
+       if(token==null) throw new NotFoundException("The token does not exist");
+       if (user == null) throw new NotFoundException("The user with id: [" + id + "] was not found");
+       if (dato == null) throw new NotFoundException(String.format("The data [%s] was not found", dato));
+       if(remover.getId() != user.getId() && remover.getRole()==0) throw new NotFoundException("You can not edit another account if you are not an admin or the owner");
+       
+       repository.deleteData(id, dataKey);        
+       
+       return Response.noContent().build();
+   }
 	
 	////////////////////////////   OPERACIONES EXCLUSIVAS DE ROLES SUPERIORES   ////////////////////////////
 	
@@ -226,24 +257,5 @@ public class UserResource {
         else if (user.getRole() == 1) user.setRole(0);
         return Response.noContent().build();
     }
-	
-	////////////////////////////   OPERACIONES DE GRUPOS   ////////////////////////////
-	
-	
-	////////////////////////////   OPERACIONES DE FILTRADO Y ORDENACION   ////////////////////////////
-	
-	
-	
-	//   TODO SIN HACER
-	
-	//   CRUD DATOS DE USUARIO
-	
-	//   FILTRO DE NOMBRES DE USUARIOS DADO UN DATO Y EL VALOR
-	
-	//   ACCESO A FUNCIONES DE ROL 1 Y 2
-	
-	//   TODO ACTUALIZAR
-	
-	//   DELETE USER // BANEAR USUARIO COMO ROL 2
 	
 }

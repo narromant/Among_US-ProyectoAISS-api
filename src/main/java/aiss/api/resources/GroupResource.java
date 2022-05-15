@@ -58,9 +58,9 @@ public class GroupResource {
    public Response addGroup(@Context UriInfo uriInfo, Group_Token body) {
 	   Group group = body.getGroup();
 	   String adminToken = body.getToken();
-	   System.out.println("\n\n\n"+repository.getTokenUserId(adminToken)+"\n\n\n");
+
        User admin = repository.getUser(repository.getTokenUserId(adminToken));
-       //System.out.println("\n\n\n"+admin);
+
        if (admin == null) throw new BadRequestException("The token does not exist");
        if (admin.getRole() == 0) throw new UnauthorizedException("This function is exclusive to admins and the owner");
        group.setCreator(admin.getId());
@@ -108,9 +108,9 @@ public class GroupResource {
     @Consumes("application/json")
     public Response deleteGroup(@Context UriInfo uriInfo, @PathParam("id") String id, String token) {
         Group toberemoved = repository.getGroup(id);
+        if (toberemoved == null) throw new NotFoundException("The group with id: ["+ id +"] was not found");
         User creator= repository.getUser(toberemoved.getCreator());
         User admin = repository.getUser(repository.getTokenUserId(token));
-        if (toberemoved == null) throw new NotFoundException("The group with id: ["+ id +"] was not found");
         if (admin == null) throw new NotFoundException("The token does not exist");
         if (admin.getRole() == 0 || admin.getId() != creator.getId() && admin.getRole() !=2) throw new UnauthorizedException("This function is exclusive to the creator and the owner");
         repository.deleteGroup(id);
@@ -126,9 +126,6 @@ public class GroupResource {
         String token = body.getToken();
         User admin = repository.getUser(repository.getTokenUserId(token));
         User creator= repository.getUser(group.getCreator());
-        
-        System.out.println("\n"+body.getUser()+"\n");
-        System.out.println("\n"+admin.getRole()+"\n");
         
         if (repository.getGroup(id) == null) throw new NotFoundException("The group with id: ["+ id +"] was not found");
         if (admin == null) throw new BadRequestException("The token does not exist");

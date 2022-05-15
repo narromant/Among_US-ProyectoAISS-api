@@ -28,6 +28,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
+import aiss.api.resources.bodyModels.Id_Token;
+import aiss.api.resources.bodyModels.User_Token;
 import aiss.api.resources.comparators.ComparatorNameUser;
 import aiss.api.resources.comparators.ComparatorNameUserReversed;
 import aiss.model.Token;
@@ -73,19 +75,17 @@ public class UserResource {
 	@Consumes("application/json")
 	@Produces("application/json")
 	public Response addUser(@Context UriInfo uriInfo, User user) {
-		user.setId("");
+		
 		user.setData(new HashMap<>());
 		if (repository.getAllUsers().isEmpty()) user.setRole(2);
 		else user.setRole(0);
 		if (user.getName() == null || "".equals(user.getName())) throw new BadRequestException("The user's name can't be null");
-		if (user.getPassword() == null && user.getPassword().length() < 6) throw new BadRequestException("The user's password length must be at least 6 digits");
+		if (user.getPassword() == null || user.getPassword().length() < 6) throw new BadRequestException("The user's password length must be at least 6 digits");
 		repository.addUser(user);
-		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass(), "get");
+		UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass());
 		
-		System.out.println("\n\n\n\n");
 		URI uri = ub.build(user.getId());
 
-		
 		ResponseBuilder resp = Response.created(uri);
 		resp.entity(user);			
 		return resp.build();
@@ -119,10 +119,13 @@ public class UserResource {
 	//   DEVOLVER UN USUARIO
 	@GET
 	@Path("/{id}")
+	@Consumes("application/json")
 	@Produces("application/json")
-	public User getUser(@PathParam("id") String id) {
+	public User getUser(@PathParam("id") String id, String token) {
+		System.out.println(token);
 		User user = repository.getUser(id);
 		if (user == null) throw new NotFoundException("The user with id: [" + id + "] was not found");
+		if (repository.checkCorrectToken(user.getName(), token)) throw new BadRequestException("The identification token is not correct");
 		return user;
 	}
 	
@@ -136,17 +139,28 @@ public class UserResource {
 		return Response.noContent().build();
 	}
 	
-	//   EDITAR EL NOMBRE DEL USUARIO [NECESITA TOKEN]
-	@PUT
-	@Consumes("application/json")
-	public Response updateUser(User user, String token) {
-		User oldUser = repository.getUser(user.getId());
-		if (repository.checkCorrectToken(user.getName(), token)) throw new BadRequestException("The identification token is not correct");
-		if (oldUser == null) throw new NotFoundException("The user with id: [" + user.getId() + "] was not found");			
-		if (user.getData() != null || user.getRole() != null || user.getPassword() != null) throw new BadRequestException("You can only change the name of the user with this function.");
-		if (user.getName()!=null) oldUser.setName(user.getName());
-		return Response.noContent().build();
-	}
+//  EDITAR EL NOMBRE DEL USUARIO [NECESITA TOKEN]
+   @PUT
+   @Path("/{id}")
+   @Consumes("application/json")
+   public Response updateUser(@PathParam("id") String id, User_Token body) {
+       
+       User user = body.getUser();
+       String token = body.getToken();
+       User oldUser = repository.getUser(id);
+       
+       System.out.println("\\n\\n\\n"+token);
+       System.out.println(oldUser.getName());
+       System.out.println(repository.getTokenUserId(token));
+       System.out.println(token.equals(repository.getTokenUserId(id)));
+       
+       if (oldUser == null) throw new NotFoundException("The user with id: [" + id + "] was not found");  
+       if (oldUser.getId() != repository.getTokenUserId(token)) throw new BadRequestException("The identification token is not correct");        
+       if (user.getData() != null || user.getRole() != null || user.getPassword() != null) throw new BadRequestException("You can only change the name of the user with this function.");
+       if (user.getName()!=null) oldUser.setName(user.getName());
+       
+       return Response.noContent().build();
+   }
 	
 	//   INSERTAR UN NUEVO DATO DE USUARIO
 	@POST	
@@ -173,7 +187,7 @@ public class UserResource {
 	//   EDITAR UN DATO DE USUARIO
 	@DELETE
 	@Path("/{userId}/{dataKey}")
-	public Response removeSong(@PathParam("userId") String userId, @PathParam("dataKey") String dataKey) {
+	public Response removeDataKey(@PathParam("userId") String userId, @PathParam("dataKey") String dataKey) {
 		User user = repository.getUser(userId);
 		String dato = repository.getOneData(userId, dataKey);
 		
@@ -197,17 +211,21 @@ public class UserResource {
 	
 	//   CAMBIAR ROL DE USUARIO
 	@PUT
-	@Path("/admins/{userId}/{ownerToken}")
-	public Response switchRole(String userId, String ownerToken) {
-		User owner = repository.getUser(repository.getTokenUserId(ownerToken));
-		if (owner == null) throw new BadRequestException("The token does not exist");
-		if (owner.getRole() != 2) throw new UnauthorizedException("This function is exclusive to the owner");
-		User user = repository.getUser(userId);
-		if (user.getRole() == 2) throw new BadRequestException("The owner can not change roles");
-		else if (user.getRole() == 0) user.setRole(1);
-		else if (user.getRole() == 1) user.setRole(0);
-		return Response.noContent().build();
-	}
+    @Path("/admins")
+	@Consumes("application/json")
+    public Response switchRole(Id_Token body) {
+        
+        String userId = body.getUser();
+        String ownerToken = body.getToken();
+        User owner = repository.getUser(repository.getTokenUserId(ownerToken));
+        if (owner == null) throw new BadRequestException("The token does not exist");
+        if (owner.getRole() != 2) throw new UnauthorizedException("This function is exclusive to the owner");
+        User user = repository.getUser(userId);
+        if (user.getRole() == 2) throw new BadRequestException("The owner can not change roles");
+        else if (user.getRole() == 0) user.setRole(1);
+        else if (user.getRole() == 1) user.setRole(0);
+        return Response.noContent().build();
+    }
 	
 	////////////////////////////   OPERACIONES DE GRUPOS   ////////////////////////////
 	
@@ -220,7 +238,6 @@ public class UserResource {
 	
 	//   CRUD DATOS DE USUARIO
 	
-	//   LAS MIERDAS DE LOS GRUPOS
 	//   FILTRO DE NOMBRES DE USUARIOS DADO UN DATO Y EL VALOR
 	
 	//   ACCESO A FUNCIONES DE ROL 1 Y 2
@@ -228,6 +245,5 @@ public class UserResource {
 	//   TODO ACTUALIZAR
 	
 	//   DELETE USER // BANEAR USUARIO COMO ROL 2
-	//   MODIFICAR ROLES COMO ROL 2 (no se sabe si funciona lol)
 	
 }

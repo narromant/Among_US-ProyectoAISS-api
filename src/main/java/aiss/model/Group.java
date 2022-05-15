@@ -9,7 +9,7 @@ public class Group {
     private String id;
     private String name;
     private String description;
-    private Collection<String> users;
+    private List<String> users;
     private String creator;
     
     public Group(String name,String description, String creator) {
@@ -35,7 +35,7 @@ public class Group {
 		return description;
 	}
 
-	public Collection<String> getUsers() {
+	public List<String> getUsers() {
 		return users;
 	}
 
@@ -55,7 +55,7 @@ public class Group {
 		this.description = description;
 	}
 
-	public void setUsers(Collection<String> users) {
+	public void setUsers(List<String> users) {
 		this.users = users;
 	}
 
@@ -67,7 +67,7 @@ public class Group {
     public void addUser(String userId) {
         this.users.add(userId); 
     }
-    public void addMultipleUsers(Collection<String> users) {
+    public void addMultipleUsers(List<String> users) {
         this.users.addAll(users);
     }
 

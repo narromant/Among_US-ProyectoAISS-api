@@ -1,5 +1,6 @@
 package aiss.model.repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -251,7 +252,12 @@ public class MapUserDataRepository implements UserDataRepository {
 	}
 	
 	public void addGroupUser(String id, String userId) {
-		groupMap.get(id).addUser(userId);
+		Group g= groupMap.get(id);
+		List<String> l = new ArrayList<String>(groupMap.get(id).getUsers()) ;
+		l.add(userId);
+		g.setUsers(l);
+		groupMap.put(id, g);
+		
 	}
 	
 	public Collection<String> getAllGroupUsers(String id) {
@@ -259,7 +265,11 @@ public class MapUserDataRepository implements UserDataRepository {
 	}
 	
 	public void deleteGroupUser(String id, String userId) {
-		groupMap.get(id).deleteUser(userId);
+		Group g= groupMap.get(id);
+		List<String> l = new ArrayList<String>(groupMap.get(id).getUsers()) ;
+		l.remove(userId);
+		g.setUsers(l);
+		groupMap.put(id, g);
 	}
 	
 }

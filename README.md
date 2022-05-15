@@ -5,7 +5,11 @@ Proyecto de AISS creado por Alejandro Mateo Capilla, Ignacio Arroyo Mantero y Ta
 Among US es una API de gestión de datos de usuario especializada en la seguridad y administración de los mismos mediante el uso de contraseñas de usuario, tokens de identificación y almacenamiento de datos de usuario. Su capacidad de almacenamiento de datos es muy versatil, ya que, al no tener un patrón predefinido, los datos pueden ser cualquier cosa (datos personales, claves ajenas, etc).
 
 Los usuarios pueden tener 3 roles:
- - PROPIETARIO (role=2): Asignado únicamente al primer usuario registrado automáticamente. Asigna y elimina a otros usuarios como administradores, y banea a otros usuarios. Solo puede ser eliminado cuando es el único usuario en el repositorio.
+ - **PROPIETARIO (role=2)**: Asignado únicamente al primer usuario registrado automáticamente. Asigna y elimina a otros usuarios como administradores, banea a otros usuarios y tiene acceso todos los privilegios de dichos administradores. Solo puede ser eliminado cuando es el único usuario en el repositorio.
+
+ - **ADMINISTRADOR (role=1)**: Puede para modificar datos de otros usuarios con rol CLIENTE sin necesitar de tener el token de estos, además de poder crear grupos.
+
+ - **CLIENTE (role=0)**: Sin operaciones especiales.
 
 
 La API REST estará formada por tres recursos que permitirán manipular grupos de usuarios, tokens de usuarios, y a los mismos usuarios. 

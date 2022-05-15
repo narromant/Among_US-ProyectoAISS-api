@@ -10,7 +10,7 @@ La API REST estará formada por tres recursos que permitirán manipular grupos d
 | HTTP  | URI | Descripción |
 | ------------- | ------------- | ------------- |
 | GET |  /user | Devuelve todos los usuarios de la aplicación. Es posible filtrar los usuarios devueltos de dos maneras, con el parámetro de query Boolean *“onlyAdmins”*, que devuelve aquellos usuarios con un rol de ADMIN (role=1) o de OWNER (role=2), o con el parametro de query String *"name"*, que solo devuelve el usuario que tenga el nombre dado, en caso de que exista. **No se pueden usar los dos filtros a la vez**|
-| GET | /song/{songId}  |  Devuelve la canción con id=songId. Si la canción no existe devuelve un “404 Not Found”. |
+| GET | /user/{userId}  |  Devuelve el usuario con id=userId. Si el usuario no existe devuelve un “404 Not Found”. |
 | POST | /song | Añade una nueva canción cuyos datos se pasan en el cuerpo de la petición en formato JSON (no se debe pasar id, se genera automáticamente). Si el nombre de la canción no es válido (null o vacío) devuelve un error “400 Bad Request”. Si se añade satisfactoriamente, devuelve “201 Created” con la referencia a la URI y el contenido de la canción. |
 | PUT | /song  | Actualiza la canción cuyos datos se pasan en el cuerpo de la petición en formato JSON (deben incluir el id de la canción). Si la canción no existe, devuelve un “404 Not Found”. Si se realiza correctamente, devuelve “204 No Content”. |
 | DELETE | /song/{songId}  |  Elimina la canción con id=songId. Si la canción no existe, devuelve un “404 Not Found”. Si se realiza correctamente, devuelve “204 No Content”.|

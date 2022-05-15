@@ -1,15 +1,15 @@
-# Implementación de una API REST 
+# AMONG US. NO MORE IMPOSTORS
 
-Práctica 5 de la asignatura AISS
+Proyecto de AISS creado por Alejandro Mateo Capilla, Ignacio Arroyo Mantero y Tadeo Cabrera Gómez
 
-La API REST estará formada por dos recursos que permitirán manipular listas de reproducción y canciones respectivamente. 
+Among US es una API de gestión de datos de usuario especializada en la seguridad y administración de los mismos mediante el uso de contraseñas de usuario, tokens de identificación y almacenamiento de datos de usuario.
 
-El contrato de servicios de listas de reproducción se detalla a continuación. No todas las opciones han sido implementadas en el código proporcionado. El objetivo de esta práctica es se implementen todos los métodos necesarios para que la API funcione como se detalla a continuación. 
+La API REST estará formada por tres recursos que permitirán manipular grupos de usuarios, tokens de usuarios, y a los mismos usuarios. 
 
-### Recurso Song ###
+### Recurso User ###
 | HTTP  | URI | Descripción |
 | ------------- | ------------- | ------------- |
-| GET |  /song | Devuelve todas las canciones de la aplicación. •	Es posible ordenar las canciones por el álbum o el artista con el parámetro de query “order”, que acepta los valores “album”, “-album”, “artist” o “-artist”. •	También es posible filtrar las canciones devueltas con el parámetro de query “q”, que devuelve aquellas canciones cuyo título, álbum o artista contengan la cadena enviada (ignorando mayúsculas y minúsculas).|
+| GET |  /user | Devuelve todos los usuarios de la aplicación. •	Es posible ordenar las canciones por el álbum o el artista con el parámetro de query “order”, que acepta los valores “album”, “-album”, “artist” o “-artist”. •	También es posible filtrar las canciones devueltas con el parámetro de query “q”, que devuelve aquellas canciones cuyo título, álbum o artista contengan la cadena enviada (ignorando mayúsculas y minúsculas).|
 | GET | /song/{songId}  |  Devuelve la canción con id=songId. Si la canción no existe devuelve un “404 Not Found”. |
 | POST | /song | Añade una nueva canción cuyos datos se pasan en el cuerpo de la petición en formato JSON (no se debe pasar id, se genera automáticamente). Si el nombre de la canción no es válido (null o vacío) devuelve un error “400 Bad Request”. Si se añade satisfactoriamente, devuelve “201 Created” con la referencia a la URI y el contenido de la canción. |
 | PUT | /song  | Actualiza la canción cuyos datos se pasan en el cuerpo de la petición en formato JSON (deben incluir el id de la canción). Si la canción no existe, devuelve un “404 Not Found”. Si se realiza correctamente, devuelve “204 No Content”. |

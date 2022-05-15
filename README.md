@@ -1,9 +1,13 @@
 # AMONG US. NO MORE IMPOSTORS
 
+## DESCRIPCIÓN
 Proyecto de AISS creado por Alejandro Mateo Capilla, Ignacio Arroyo Mantero y Tadeo Cabrera Gómez
 
 Among US es una API de gestión de datos de usuario especializada en la seguridad y administración de los mismos mediante el uso de contraseñas de usuario, tokens de identificación y almacenamiento de datos de usuario. Su capacidad de almacenamiento de datos es muy versatil, ya que, al no tener un patrón predefinido, los datos pueden ser cualquier cosa (datos personales, claves ajenas, etc).
 
+## ELEMENTOS DE LA API
+
+## ROLES DE USUARIO
 Los usuarios pueden tener 3 roles:
  - **PROPIETARIO (role=2)**: Asignado únicamente al primer usuario registrado automáticamente. Asigna y elimina a otros usuarios como administradores, banea a otros usuarios y tiene acceso todos los privilegios de dichos administradores. Solo puede ser eliminado cuando es el único usuario en el repositorio.
 
@@ -11,7 +15,7 @@ Los usuarios pueden tener 3 roles:
 
  - **CLIENTE (role=0)**: Sin operaciones especiales.
 
-
+## RECURSOS
 La API REST estará formada por tres recursos que permitirán manipular grupos de usuarios, tokens de usuarios, y a los mismos usuarios. 
 
 ### Recurso User ###

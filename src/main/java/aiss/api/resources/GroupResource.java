@@ -2,6 +2,7 @@ package aiss.api.resources;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -175,6 +176,14 @@ public class GroupResource {
         
         for(String userId: body.users) repository.addGroupUser(id, userId); 
         return Response.noContent().build();
+    }
+    @GET
+    @Path("/{id}/users")
+    @Produces("application/json")
+    public Collection<String> getAllGroupUsers(@PathParam("id") String id) {
+        Group group = repository.getGroup(id);
+        if (group == null) throw new NotFoundException("The group with id: [" + id + "] was not found");
+        return group.getUsers().stream().map(x -> repository.getUserName(x)).collect(Collectors.toList());
     }
 
 }

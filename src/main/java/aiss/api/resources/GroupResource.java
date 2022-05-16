@@ -49,7 +49,7 @@ public class GroupResource {
 	//   DEVOLVER TODOS LOS GRUPOS
 	@GET
 	@Produces("application/json")
-	public Collection<Group> getAll() {
+	public Collection<Group> getAllGroups() {
 		return repository.getAllGroups();
 	}
 //  AGREGAR UN NUEVO GRUPO. EXCLUSIVO PARA ROL 1 Y 2
@@ -62,7 +62,7 @@ public class GroupResource {
 
        User admin = repository.getUser(repository.getTokenUserId(adminToken));
 
-       if (admin == null) throw new BadRequestException("The token does not exist");
+       if (admin == null) throw new NotFoundException("The token does not exist");
        if (admin.getRole() == 0) throw new UnauthorizedException("This function is exclusive to admins and the owner");
        group.setCreator(admin.getId());
        repository.addGroup(group);
@@ -95,7 +95,7 @@ public class GroupResource {
         User creator= repository.getUser(oldGroup.getCreator());
         User admin = repository.getUser(repository.getTokenUserId(token));
         
-        if (admin == null) throw new BadRequestException("The token does not exist");
+        if (admin == null) throw new NotFoundException("The token does not exist");
         if (admin.getRole() == 0 || !creator.getId().equals(admin.getId()) && admin.getRole() !=2) throw new UnauthorizedException("This function is exclusive to the creator and the owner");
         
         if (group.getName() != null) oldGroup.setName(group.getName());
@@ -123,16 +123,17 @@ public class GroupResource {
     @Consumes("application/json")
     public Response addUserGroup(@Context UriInfo uriInfo, @PathParam("id") String id, Id_Token body) {
         
+    	User user=repository.getUser(body.getUser());
         Group group = repository.getGroup(id);
         String token = body.getToken();
         User admin = repository.getUser(repository.getTokenUserId(token));
         User creator= repository.getUser(group.getCreator());
         
         if (repository.getGroup(id) == null) throw new NotFoundException("The group with id: ["+ id +"] was not found");
-        if (admin == null) throw new BadRequestException("The token does not exist");
+        if (admin == null) throw new NotFoundException("The token does not exist");
         if (admin.getRole() == 0 || admin.getId() != creator.getId() && admin.getRole() !=2) throw new UnauthorizedException("This function is exclusive to the creator and the owner");
-        if (repository.getUser(body.getUser()) == null) throw new NotFoundException("The user with id: ["+ body.getUser() +"] was not found");
-            
+        if ( user == null) throw new NotFoundException("The user with id: ["+ body.getUser() +"] was not found");
+        if(group.getUsers().contains(user.getId())) throw new BadRequestException("The user is already  in the group");
         repository.addGroupUser(id, body.getUser());
         return Response.noContent().build();
     }
@@ -148,7 +149,7 @@ public class GroupResource {
        User creator= repository.getUser(group.getCreator());
        
        if (repository.getGroup(id) == null) throw new NotFoundException("The group with id: ["+ id +"] was not found");
-       if (admin == null) throw new BadRequestException("The token does not exist");
+       if (admin == null) throw new NotFoundException("The token does not exist");
        if (!group.getUsers().contains(body.getUser())) throw new BadRequestException("The desired user to remove does not belong to the selected group");
        if (admin.getRole() == 0 || admin.getId() != creator.getId() && admin.getRole() !=2) throw new UnauthorizedException("This function is exclusive to the creator and the owner");
        if (repository.getUser(body.getUser()) == null) throw new NotFoundException("The user with id: ["+ body.getUser() +"] was not found");
@@ -170,7 +171,7 @@ public class GroupResource {
         User creator= repository.getUser(group.getCreator());
         
         if (repository.getGroup(id) == null) throw new NotFoundException("The group with id: ["+ id +"] was not found");
-        if (admin == null) throw new BadRequestException("The token does not exist");
+        if (admin == null) throw new NotFoundException("The token does not exist");
         if (admin.getRole() == 0 || admin.getId() != creator.getId() && admin.getRole() !=2) throw new UnauthorizedException("This function is exclusive to the creator and the owner");
         for(String userId: body.users) if (repository.getUser(userId) == null) throw new NotFoundException("The user with id: ["+ userId +"] was not found");
         

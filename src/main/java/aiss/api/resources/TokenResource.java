@@ -51,7 +51,7 @@ public class TokenResource {
 		System.out.println(String.format("\n\n\nUser %s attempted to login with password %s.\n\n\n", id, password));
 		User user = repository.getUser(id);
 
-		if (user == null) throw new BadRequestException("User not found");
+		if (user == null) throw new NotFoundException("User not found");
 		if (repository.getUserIdToken(id) != null) throw new BadRequestException("User is already logged");
 		if (!user.getPassword().equals(password)) throw new BadRequestException("Incorrect password. Please try again.");
 		repository.addToken(user);

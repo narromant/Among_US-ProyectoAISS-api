@@ -75,9 +75,9 @@ public class UserResource {
         }
         List<User>resultList=result.stream().collect(Collectors.toList());
         if (order != null) {
-            if (order.equals(" name")) Collections.sort(resultList, new ComparatorNameUser());
+            if (order.equals("name")) Collections.sort(resultList, new ComparatorNameUser());
             else if (order.equals("-name")) Collections.sort(resultList, new ComparatorNameUserReversed());
-            else if (order.equals(" id")) Collections.sort(resultList, new ComparatorIdUser());
+            else if (order.equals("id")) Collections.sort(resultList, new ComparatorIdUser());
             else if (order.equals("-id")) Collections.sort(resultList, new ComparatorIdUserReversed());
             else throw new BadRequestException("The order parameter must be +name, -name, +id or -id");
         }
@@ -146,7 +146,7 @@ public class UserResource {
        
        if (oldUser == null) throw new NotFoundException("The user with id: [" + id + "] was not found");  
        if (oldUser.getId() != repository.getTokenUserId(token)) throw new BadRequestException("The identification token is not correct");        
-       if (user.getData() != null || user.getRole() != null || user.getPassword() != null) throw new BadRequestException("You can only change the name of the user with this function.");
+       if (user.getData() != null || user.getRole() != null || user.getPassword() != null) throw new UnauthorizedException("You can only change the name of the user with this function.");
        if (user.getName()!=null) oldUser.setName(user.getName());
        
        return Response.noContent().build();
@@ -177,11 +177,11 @@ public class UserResource {
  
         if(token==null) throw new NotFoundException("The token does not exist");
         if (user == null) throw new NotFoundException("The user with id: [" + id + "] was not found");
-        if(adder.getId() != user.getId() && adder.getRole()==0) throw new NotFoundException("You can not edit another account if you are not an admin or the owner");
+        if(adder.getId() != user.getId() && adder.getRole()==0) throw new UnauthorizedException("You can not edit another account if you are not an admin or the owner");
         if (repository.getOneData(id, dataKey) != null) throw new BadRequestException("The data is already included in the user.");
         repository.updateData(id, dataKey, dataValue);        
         UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass());
-        URI uri = ub.build(id);
+        URI uri = ub.build(id);	
         ResponseBuilder resp = Response.created(uri);
         resp.entity(user);            
         return resp.build();
@@ -189,21 +189,21 @@ public class UserResource {
 	
 //  EDITAR UN NUEVO DATO DE USUARIO
    @PUT    
-   @Path("/{userId}/data/{dataKey}")
+   @Path("/{id}/data/{dataKey}")
    @Consumes("application/json")
    @Produces("application/json")
-   public Response editData(@Context UriInfo uriInfo,@PathParam("userId") String userId, @PathParam("dataKey") String dataKey, Value_Token body) {                
+   public Response editData(@Context UriInfo uriInfo,@PathParam("id") String id, @PathParam("dataKey") String dataKey, Value_Token body) {                
        String token = body.getToken();
        String dataValue = body.getValue();
-       User user = repository.getUser(userId);
+       User user = repository.getUser(id);
        User adder= repository.getUser(repository.getTokenUserId(token));
        
        if(token==null) throw new NotFoundException("The token does not exist");
-       if (user == null) throw new NotFoundException("The user with id: [" + userId + "] was not found");
-       if(adder.getId() != user.getId() && adder.getRole()==0) throw new NotFoundException("You can not edit another account if you are not an admin or the owner");
-       repository.updateData(userId, dataKey, dataValue);        
+       if (user == null) throw new NotFoundException("The user with id: [" + id + "] was not found");
+       if(adder.getId() != user.getId() && adder.getRole()==0) throw new UnauthorizedException("You can not edit another account if you are not an admin or the owner");
+       repository.updateData(id, dataKey, dataValue);        
        UriBuilder ub = uriInfo.getAbsolutePathBuilder().path(this.getClass());
-       URI uri = ub.build(userId);
+       URI uri = ub.build(id);
        ResponseBuilder resp = Response.created(uri);
        resp.entity(user);            
        return resp.build();
@@ -222,8 +222,8 @@ public class UserResource {
 
        if(token==null) throw new NotFoundException("The token does not exist");
        if (user == null) throw new NotFoundException("The user with id: [" + id + "] was not found");
-       if (dato == null) throw new NotFoundException(String.format("The data [%s] was not found", dato));
-       if(remover.getId() != user.getId() && remover.getRole()==0) throw new NotFoundException("You can not edit another account if you are not an admin or the owner");
+       if (dato == null) throw new NotFoundException(String.format("The data [%s] was not found", dataKey));
+       if(remover.getId() != user.getId() && remover.getRole()==0) throw new UnauthorizedException("You can not edit another account if you are not an admin or the owner");
        
        repository.deleteData(id, dataKey);        
        
@@ -236,7 +236,7 @@ public class UserResource {
 	@GET
 	@Path("/admins")
 	@Produces("application/json")
-	public Collection<User> getAllAdmins() {
+	public List<User> getAllAdmins() {
 		return repository.getAllUsers().stream().filter(x -> x.getRole() == 1).collect(Collectors.toList());
 	}
 	

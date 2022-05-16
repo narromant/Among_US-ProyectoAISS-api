@@ -3,8 +3,8 @@ package aiss.api.resources.bodyModels;
 import aiss.model.Group;
 
 public class Group_Token {
-	public static Group group;
-    public static String token;
+	public Group group;
+    public String token;
     
     public  Group getGroup() {
         return group;

@@ -90,6 +90,13 @@ public class MapUserDataRepository implements UserDataRepository {
 		user07.setRole(0);
 		user07.setData(new HashMap<>(mapaInmutable));
 		
+		User user08 = new User();
+		mapaInmutable = Map.of("ExampeData1","ExampleValue1","ExampeData2","ExampleValue2","ExampeData2","ExampleValue2");
+		user08.setName("Example");
+		user08.setPassword("Password08");
+		user08.setRole(0);
+		user08.setData(new HashMap<>(mapaInmutable));
+		
 		Group group01= new Group();
 		usuarios=List.of("u2","u3");
 		group01.setName("Nueva Estrategia de Marketing");

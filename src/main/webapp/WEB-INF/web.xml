@@ -24,7 +24,7 @@
 	<!-- All calls to /api/xxx will be sent to the resteasy servlet -->
 	<servlet-mapping>
 		<servlet-name>Resteasy</servlet-name>
-		<url-pattern>/api/*</url-pattern>
+		<url-pattern>/api/v1</url-pattern>
 	</servlet-mapping>
 	
 	<!-- Default page to serve -->

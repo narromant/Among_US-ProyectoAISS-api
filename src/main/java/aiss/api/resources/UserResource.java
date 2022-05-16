@@ -9,14 +9,11 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.jboss.resteasy.annotations.Body;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.NotFoundException;
 import org.jboss.resteasy.spi.UnauthorizedException;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +35,6 @@ import aiss.api.resources.comparators.ComparatorIdUser;
 import aiss.api.resources.comparators.ComparatorIdUserReversed;
 import aiss.api.resources.comparators.ComparatorNameUser;
 import aiss.api.resources.comparators.ComparatorNameUserReversed;
-import aiss.model.Token;
 import aiss.model.User;
 import aiss.model.repository.MapUserDataRepository;
 import aiss.model.repository.UserDataRepository;

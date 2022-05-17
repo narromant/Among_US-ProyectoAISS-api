@@ -61,6 +61,8 @@ public class UserResource {
     @Produces("application/json")
     public List<User> getAll(@QueryParam("order") String order, @QueryParam("onlyAdmins") Boolean onlyAdmins, @QueryParam("name") String name) {
         
+		
+		
         if (onlyAdmins != null && name != null) throw new BadRequestException("You can not use both filters");
         List<User> unfilteredResult = repository.getAllUsers().stream().collect(Collectors.toList());
         Set<User> result = new HashSet<User>();

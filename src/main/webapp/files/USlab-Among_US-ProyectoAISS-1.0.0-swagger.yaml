@@ -1,0 +1,922 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/USlab/Among_US-ProyectoAISS/1.0.0
+info:
+  description: This is university project.
+              THIS API WILL ALLOW YOU TO ASSOCIATE ANY DATA SET WITH DIFFERENT USERS IN A SIMPLE WAY, THROUGH THE USE OF IDENTIFICATION TOKENS.
+              IMPORTANT To log in with a user, you will need to use createUserToken, in the Token class. If a function is exclusive to a role, it means that the entered token must belong to a user of said role.
+              IT ALSO HAS 3 DIFFERENT USER ROLES, WHICH HAVE ACCESS TO MORE SYSTEM OPERATIONS, SUCH AS EDITING DATA OF OTHER USERS OR BANNING THEM. 
+  version: "1.0.0"
+  title: Among_US-ProyectoAISS
+  contact:
+    email: you@your-company.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: Users
+    description: Users
+  - name: Tokens
+    description: Tokens
+  - name: Groups
+    description: Group of users
+paths:
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      description: Get all users
+      operationId: getAll
+      parameters:
+        - name: order
+          in: query
+          description: Order results by name or id
+          required: false
+          schema:
+            type: string
+            enum:
+              - name
+              - '-name'
+              - id
+              - '-id'
+        - name: onlyAdmins
+          in: query
+          description: Boolean to return a list of admins
+          required: false
+          schema:
+            type: boolean
+        - name: name
+          in: query
+          description:  Name of the user
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    password:
+                      type: string
+                    role:
+                      type: integer
+                    data:
+                      type: object
+                  example:
+                    id: user01
+                    name: Rodrigo
+                    password: Password01
+                    role: 1
+                    data: '{(job:manager),(age:51)}'
+        '400':
+          description: Bad request
+    post:
+      tags:
+        - Users
+      summary: Create a user
+      description: Create a user
+      operationId: addUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - password
+              properties:
+                name:
+                  type: string
+                password:
+                  type: string
+                data:
+                  type: object
+              example:
+                name: Rodrigo
+                password: Password
+                data: '{(job:manager),(age:51)}'
+        description: User to create. Password lenght > 6
+        required: true
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  password:
+                    type: string
+                  data:
+                    type: object
+                example:
+                  id: user01
+                  name: Rodrigo
+                  password: Password01
+                  rol: 0
+                  data: '{(job:manager),(age:51)}'
+        '400':
+          description: Bad request
+    
+          
+        
+  '/users/{id}':
+    get:
+      tags: 
+        - Users
+      summary: Returns a selected user by id
+      description: searchs a user that matches the given id
+      operationId: getUser
+      parameters: 
+        - name: id
+          in: path
+          description: id of the user
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: user found(
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  password:
+                    type: string
+                  data:
+                    type: object
+                example:
+                  id: u1
+                  title: Rodrigo
+                  password: Password01
+                  data: '{(job:manager)}'
+        '404':
+          description: user not found
+    delete:
+      tags:
+        - Users
+      summary: Delete user
+      description: Delete user. The deleter must be the same user or the owner and must have created a token
+      operationId: removeUser
+      parameters:
+        - name: id
+          in: path
+          description: Id of the user
+          required: true
+          schema:
+            type: string
+        - name: id_token
+          in: header
+          description: Body with the tokens
+          required: true
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+            example: 
+              token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+      responses:
+        '204':
+          description: User deleted
+        '401':
+          description: Not authorized
+        '404':
+          description: User not found
+    put:
+      tags: 
+        - Users
+      summary: Updates a user
+      description: updates a user name. Updater must have created a token and be the same user
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          description: Id of the user
+          required: true
+          schema:
+            type: string
+        - name: user_token
+          in: header
+          description: Body with user updates and tokens
+          required: true
+          schema:
+            type: object
+            properties:
+              user:
+                type: object
+                properties:
+                  name:
+                    type: string
+              token:
+                type: string
+            example: 
+              user:
+                name: Rodrigo
+              token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+      responses:
+        '200':
+          description: User updated succesfully
+        '400':
+          description: User parameters not correct
+        '404':
+          description: User not found
+          
+  '/users/{id}/data/{dataKey}':
+    get:
+      tags: 
+        - Users
+      summary: Get Data
+      description: Get data from a user
+      operationId: getData
+      parameters: 
+        - name: id
+          in: path
+          description: Id of the user
+          required: true
+          schema:
+            type: string
+        - name: dataKey
+          in: path
+          description: Name of the data
+          required: true
+          schema:
+            type: string
+      responses:
+         '200':
+            description: Value of the selected data
+            content:
+              application/json:
+                schema:
+                  type: string
+         '404':
+            description: Data or user not found
+    post:
+      tags:
+        - Users
+      summary: Add Data
+      description: Add a new data to the user. The adder must be the same user or the owner or an admin and must have created a Token.
+      operationId: addData
+      parameters:
+        - name: id
+          in: path
+          description: Id of the user
+          required: true
+          schema:
+            type: string
+        - name: dataKey
+          in: path
+          description: Name of the data
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - value
+                - token
+              properties:
+                value:
+                  type: string
+                token:
+                  type: string
+              example:
+                value: 2
+                token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+        description: Value to add to the created and the token of the adder
+        required: true
+      responses:
+        '201':
+          description: User edited
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  password:
+                    type: string
+                  data:
+                    type: object
+                example:
+                  id: u1
+                  name: Rodrigo
+                  password: Password01
+                  rol: 0
+                  data: '{(job:manager),(age:51),(datakey:2)}'
+        '400':
+          description: Bad request
+        '401':
+          description: Not Authorized
+        '404':
+            description: User not found
+    put:
+      tags: 
+        - Users
+      summary: Edit data of user
+      description: edit data of user. The user editing the data must be the same or the owner or an admin and they must have created a token.
+      operationId: editData
+      parameters:
+        - name: id
+          in: path
+          description: Id of the user
+          required: true
+          schema:
+            type: string
+        - name: dataKey
+          in: path
+          description: Name of the data
+          required: true
+          schema:
+            type: string
+        - name: value_token
+          in: header
+          description: Body with data updates and tokens
+          required: true
+          schema:
+            type: object
+            properties:
+              value:
+                type: string
+              token:
+                type: string
+            example: 
+              value: 2
+              token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+      responses:
+        '201':
+          description: Data added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  password:
+                    type: string
+                  data:
+                    type: object
+                example:
+                  id: u1
+                  name: Rodrigo
+                  password: Password
+                  rol: 0
+                  data: '{(job:manager),(age:51),(datakey:2)}'
+        '401':
+          description: Not authorized
+        '400':
+          description: Bad request
+    delete:
+      tags: 
+        - Users
+      summary: Remove Data
+      description: delete user data. The deleter must be the same user or the owner or an admin and must have created a Token
+      operationId: removeData
+      parameters:
+        - name: id
+          in: path
+          description: Id of the user
+          required: true
+          schema:
+            type: string
+        - name: dataKey
+          in: path
+          description: Name of the data
+          required: true
+          schema:
+            type: string
+        - name: value_token
+          in: header
+          description: Body with data updates and tokens (only the token is necessary here)
+          required: true
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+            example: 
+              token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+      responses:
+        '204':
+          description: Data deleted
+        '401':
+          description: Not authorized
+        '404':
+          description: Data not found      
+          
+  '/users/admins':
+    get:
+      tags:
+        - Users
+      summary: Get all admins
+      description: Get all admins
+      operationId: getAllAdmins
+      responses:
+        '200':
+          description: Returns a list of all the admins(role>=1)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    password:
+                      type: string
+                    role:
+                      type: integer
+                    data:
+                      type: object
+                  example:
+                    id: u1
+                    name: Rodrigo
+                    password: Password01
+                    role: 1
+                    data: '{(job:manager),(age:51)}'
+    put:
+      tags: 
+        - Users
+      summary: Switch Role
+      description: Switch Role, only the owner can use this function and must have created a Token
+      operationId: switchRole
+      parameters:
+        - name: id_token
+          in: header
+          description: Body with userId(target to role change) and the owner's token
+          required: true
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+              token:
+                type: string
+            example: 
+              userId: u5
+              token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+      responses:
+        '400':
+          description: Bad request     
+        '401':
+          description: Not authorized
+  /groups:
+    get:
+      tags:
+        - Groups
+      summary: Get all groups
+      description: Get all groups
+      operationId: getAllGroups
+      responses:
+        '200':
+          description: Returns a list of all existing groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    users:
+                      type: array
+                      items:
+                        type: string
+                    creator:
+                      type: string
+                  example:
+                    id: g1
+                    name: "Projecto1"
+                    description: "New marketing project"
+                    users: '[u1,u2,u3]'
+                    creator: u1
+    post:
+      tags:
+        - Groups
+      summary: Create a group
+      description: Create a group. Creator must be an admin or superior and must have created a token.
+      operationId: addGroup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - group
+                - token
+              properties:
+                group:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    users:
+                      type: array
+                      items:
+                        type: string
+                    creator:
+                      type: string
+                  example:
+                    id: g1
+                    name: "Projecto1"
+                    description: "New marketing project"
+                    users: '[u1,u2,u3]'
+                    creator: u1
+        description: Group to create
+        required: true
+      responses:
+        '201':
+          description: Group created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    users:
+                      type: array
+                      items:
+                        type: string
+                    creator:
+                      type: string
+                example:
+                    id: g1
+                    name: "Projecto1"
+                    description: "New marketing project"
+                    users: '[u1,u2,u3]'
+                    creator: u1
+        '400':
+          description: Bad request
+        '401':
+          description: Not authorized
+  '/groups/{id}':
+    get:
+      tags: 
+        - Groups
+      summary: Get a group
+      description: Get a group
+      operationId: getGroup
+      parameters: 
+        - name: id
+          in: path
+          description: id of the group
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: group found(
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    password:
+                      type: string
+                    data:
+                      type: object
+                  example:
+                    id: u1
+                    title: Fernando
+                    password: wdwde234
+                    data: '{(job:manager)}'
+        '404':
+          description: group not found
+    put:
+      tags: 
+        - Groups
+      summary: Edit group
+      description: edit group. Changer must be the creator or the owner and must have created a Token
+      operationId: editGroup
+      parameters:
+        - name: id
+          in: path
+          description: Id of the group
+          required: true
+          schema:
+            type: string
+        - name: group_token
+          in: header
+          description: Body with the updates of the group and the token of the change.
+          required: true
+          schema:
+            type: object
+            properties:
+              group:
+                type: object
+                properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    users:
+                      type: array
+                      items:
+                        type: string
+                    creator:
+                      type: string
+              token:
+                type: string
+            example: 
+              group:
+                name: New name
+                description: New description
+              token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+      responses:
+        '201':
+          description: Group updated
+        '401':
+          description: Not authorized
+        '404':
+          description: group not found
+    delete:
+      tags:
+        - Groups
+      summary: Delete group
+      description: Delete group. Deleter must be de original creator or the owner. Deleter must be have created a token.
+      operationId: deleteGroup
+      parameters:
+        - name: id
+          in: path
+          description: Id of the group to be deleted
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: header
+          description: token of the deleter
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Group deleted
+        '401':
+          description: Not Authorized
+        '404':
+          description: Group not found  
+          
+  '/groups/{id}/user':    
+    put:
+      tags: 
+        - Groups
+      summary: Add user to group
+      description: Add a single user to the group. Adder must be the creator or the owner and must have created a token
+      operationId: addUserGroup
+      parameters:
+        - name: id
+          in: path
+          description: Id of the group
+          required: true
+          schema:
+            type: string
+        - name: id_token
+          in: header
+          description: Body with the token and the userId of the user to be added to the group
+          required: true
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+              token:
+                type: string
+            example: 
+              userId: u1
+              token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+      responses:
+        '201':
+          description: users of the selected group succesfully updated
+        '400':
+          description: Bad request
+        '401':
+          description: Not Authorized
+    delete:
+      tags:
+        - Groups
+      summary: Delete an user from a group
+      description: Delete an user from a group. Only the original creator and the owner can do it. The deleter must have created a token
+      operationId: deleteUserGroup
+      parameters:
+        - name: id
+          in: path
+          description: Id of the user
+          required: true
+          schema:
+            type: string
+        - name: id_token
+          in: header
+          description: Body with the token and the userId of the user to be deleted from the group
+          required: true
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+              token:
+                type: string
+          example: 
+            userId: u5
+            token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+      responses:
+        '204':
+          description: Group user deleted
+        '400':
+          description: Bad request
+        '401':
+          description: Not authorized
+        '404':
+          description: Group or token not found
+  '/groups/{id}/users': 
+    put:
+      tags: 
+        - Groups
+      summary: Add multiple user to group
+      description: add multiple users to the group. Exlucive for role 2 or creator of the group. The adder must have created a Token.
+      operationId: addMultipleUsersGroup
+      parameters:
+        - name: id
+          in: path
+          description: Id of the group
+          required: true
+          schema:
+            type: string
+        - name: ids_token
+          in: header
+          description: Body with the tokens and an array of usersId to be added to the Group
+          required: true
+          schema:
+            type: object
+            properties:
+              users:
+                type: array
+                items:
+                  type: string
+              token:
+                type: string
+            example: 
+              users: [u1,u2.u3]
+              token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+      responses:
+        '201':
+          description: All the users successfully added to the group
+        '401':
+          description: Not authorized
+        '404':
+          description: group not found
+    get:
+      tags: 
+        - Groups
+      summary: Get a group users
+      description: Get all users from a group
+      operationId: getAllGroupUsers
+      parameters: 
+        - name: id
+          in: path
+          description: id of the group
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: 
+               [u1,u2,u3]
+        '404':
+          description: group not found
+  /tokens:
+    get:
+      tags:
+        - Tokens
+      summary: Get all tokens
+      description: Get all tokens
+      operationId: getAllTokens
+      responses:
+        '200':
+          description: Search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    value:
+                      type: string
+                    userId:
+                      type: string
+                    createdDateTime:
+                      type: object
+                    
+        '400':
+          description: Bad request
+          
+  '/tokens/{id}':  
+  
+    post:
+      tags:
+        - Tokens
+      summary: Create a user token
+      description: Create a token for the user(login). Almost all functions requires a created token
+      operationId: createUserToken
+      parameters: 
+        - name: id
+          in: path
+          description: id of the user
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              example: 
+                password: Password01
+      responses:
+        '201':
+          description: Token created
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                 token: LF_FvfJT3ajXAmZ4UaxEr_AOhkqBcN6X
+        '400':
+          description: Bad request
+          
+    delete:
+      tags:
+        - Tokens
+      summary: Delete user token
+      description: Delete user token
+      operationId: deleteUserToken
+      parameters:
+        - name: id
+          in: path
+          description: Id of the user
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User token deleted
+        '404':
+          description: User token not found
